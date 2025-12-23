@@ -63,6 +63,7 @@ local rowConfig = {
     lookAtPlayer = false,
     radialLength = 10, -- 放射状の長さ
     radialAngleSpread = 360, -- 広がる角度範囲
+    radialRotationSpeed = 1, -- 放射状の回転速度
 }
 
 -- 対応するオブジェクトタイプのリスト
@@ -828,6 +829,15 @@ local RadialAngleSpreadSlider = MainTab:CreateSlider({
     Callback = function(Value) rowConfig.radialAngleSpread = Value end,
 })
 
+local RadialRotationSpeedSlider = MainTab:CreateSlider({
+    Name = "Radial Rotation Speed",
+    Range = {0, 10},
+    Increment = 0.5,
+    CurrentValue = rowConfig.radialRotationSpeed,
+    Flag = "RadialRotationSpeedSlider",
+    Callback = function(Value) rowConfig.radialRotationSpeed = Value end,
+})
+
 local Section3 = MainTab:CreateSection("Rotation")
 
 local LookAtPlayerToggle = MainTab:CreateToggle({
@@ -1029,13 +1039,17 @@ RunService.RenderStepped:Connect(function(dt)
                 
                 obj.BG.CFrame = interpolatedCFrame
             elseif rowConfig.animationMode == "radial" then
-                -- 放射状モード：中心から放射状に広がる静的配置
+                -- 放射状モード：中心から放射状に広がり回転
                 local totalObjects = #rowPoints
                 local index = obj.index - 1
                 
+                -- 全体の回転
+                local globalRotation = time * rowConfig.radialRotationSpeed
+                
                 -- 放射状の角度を計算
                 local angleRange = math.rad(rowConfig.radialAngleSpread)
-                local angle = (index / totalObjects) * angleRange - (angleRange / 2)
+                local baseAngle = (index / totalObjects) * angleRange - (angleRange / 2)
+                local angle = baseAngle + globalRotation
                 
                 -- 距離をランダム化（より自然な広がり）
                 local seed = index * 12345
